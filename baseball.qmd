@@ -1,0 +1,6 @@
+---
+title: "Baseball"
+format: html
+---
+
+Baseball blogs!

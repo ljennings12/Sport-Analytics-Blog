@@ -1,0 +1,25 @@
+project:
+  type: website
+  resources: assets
+  output-dir: docs
+
+website:
+  title: "Sport-Analytics-Blog"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+      - href: baseball.qmd
+        text: Baseball
+
+format:
+  html:
+    theme:
+      dark: darkly
+      light: flatly
+    css: styles.css
+    toc: true
+
+
+
