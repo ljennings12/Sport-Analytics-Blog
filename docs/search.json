@@ -2,9 +2,44 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Sport-Analytics-Blog",
+    "title": "Keystone Stats Collective",
     "section": "",
     "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "football_blogs/fantasy football preview/fantasy_football_preview.html",
+    "href": "football_blogs/fantasy football preview/fantasy_football_preview.html",
+    "title": "2024 Fantasy Football Preview",
+    "section": "",
+    "text": "Introduction\n\n\n\nRankings, Opportunity, Snap Counts, and Roster\n\n\n\nGoal: Cluster running backs based on 2023 stats and compare to 2024 rankings\n\n\n\n\n\nOriginal Dendrogram2 Clusters3 Clusters4 Clusters5 Clusters\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCondense variables into 2-dimensions to plot easier\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nRunning Back Clustering for Fantasy Football 2024\n\n\nPer game statistics calculated from 2023\n\n\nCluster\nRush Attempts\nExpected Receptions\nExpected Total Yards\nExpected Touchdowns\nSnap Rate\nAverage Position Ranking\nFantasy Points / Game\n\n\n\n\n1\n12.95\n2.94\n76.60\n0.54\n0.61\n31.03\n12.37\n\n\n2\n17.19\n1.79\n86.32\n0.81\n0.62\n19.62\n14.41\n\n\n3\n8.14\n1.63\n46.52\n0.27\n0.39\n62.65\n7.10\n\n\n4\n4.43\n0.79\n25.04\n0.14\n0.17\n91.52\n3.71\n\n\n\n2024 rookies are not considered Note: Cluster 1 only contains five RBs Note: 2-point conversions were not used in Fantasy Points / Game"
+  },
+  {
+    "objectID": "football_blogs/fantasy football preview/fantasy_football_preview.html#introduction",
+    "href": "football_blogs/fantasy football preview/fantasy_football_preview.html#introduction",
+    "title": "2024 Fantasy Football Preview",
+    "section": "",
+    "text": "Introduction"
+  },
+  {
+    "objectID": "football_blogs/fantasy football preview/fantasy_football_preview.html#data",
+    "href": "football_blogs/fantasy football preview/fantasy_football_preview.html#data",
+    "title": "2024 Fantasy Football Preview",
+    "section": "",
+    "text": "Rankings, Opportunity, Snap Counts, and Roster"
+  },
+  {
+    "objectID": "football_blogs/fantasy football preview/fantasy_football_preview.html#running-backs",
+    "href": "football_blogs/fantasy football preview/fantasy_football_preview.html#running-backs",
+    "title": "2024 Fantasy Football Preview",
+    "section": "",
+    "text": "Goal: Cluster running backs based on 2023 stats and compare to 2024 rankings\n\n\n\n\n\nOriginal Dendrogram2 Clusters3 Clusters4 Clusters5 Clusters\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCondense variables into 2-dimensions to plot easier\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nRunning Back Clustering for Fantasy Football 2024\n\n\nPer game statistics calculated from 2023\n\n\nCluster\nRush Attempts\nExpected Receptions\nExpected Total Yards\nExpected Touchdowns\nSnap Rate\nAverage Position Ranking\nFantasy Points / Game\n\n\n\n\n1\n12.95\n2.94\n76.60\n0.54\n0.61\n31.03\n12.37\n\n\n2\n17.19\n1.79\n86.32\n0.81\n0.62\n19.62\n14.41\n\n\n3\n8.14\n1.63\n46.52\n0.27\n0.39\n62.65\n7.10\n\n\n4\n4.43\n0.79\n25.04\n0.14\n0.17\n91.52\n3.71\n\n\n\n2024 rookies are not considered Note: Cluster 1 only contains five RBs Note: 2-point conversions were not used in Fantasy Points / Game"
+  },
+  {
+    "objectID": "basketball.html",
+    "href": "basketball.html",
+    "title": "Basketball",
+    "section": "",
+    "text": "Basketball blogs!"
   },
   {
     "objectID": "about.html",
@@ -18,6 +53,20 @@
     "href": "baseball.html",
     "title": "Baseball",
     "section": "",
-    "text": "Baseball blogs!"
+    "text": "Baseball blogs!\n\n\n\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "football.html",
+    "href": "football.html",
+    "title": "Football",
+    "section": "",
+    "text": "Football blogs!\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n2024 Fantasy Football Preview\n\n\n\n\n\nPreparing for NFL Fantasy Redraft Leagues\n\n\n\n\n\nAug 2024\n\n\nLiam Jennings\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "hockey.html",
+    "href": "hockey.html",
+    "title": "hockey",
+    "section": "",
+    "text": "Hockey blogs!"
   }
 ]

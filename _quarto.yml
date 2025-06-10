@@ -12,6 +12,13 @@ website:
       - about.qmd
       - href: baseball.qmd
         text: Baseball
+      - href: basketball.qmd
+        text: Basketball
+      - href: football.qmd
+        text: Football
+      - href: hockey.qmd
+        text: Hockey
+
 
 format:
   html:

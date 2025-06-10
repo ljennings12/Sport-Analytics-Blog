@@ -1,0 +1,12 @@
+[
+  {
+    "listing": "/baseball.html",
+    "items": []
+  },
+  {
+    "listing": "/football.html",
+    "items": [
+      "/football_blogs/fantasy football preview/fantasy_football_preview.html"
+    ]
+  }
+]

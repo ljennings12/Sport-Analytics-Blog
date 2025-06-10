@@ -1,10 +1,10 @@
 ---
-title: "Baseball"
+title: "Football"
 listing:
-  contents: baseball_blogs
+  contents: football_blogs
   type: default
   date-format: "MMM YYYY"
   sort: "date desc" 
 ---
 
-Baseball blogs!
+Football blogs!

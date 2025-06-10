@@ -1,5 +1,5 @@
 ---
-title: "Sport-Analytics-Blog"
+title: "Keystone Stats Collective"
 ---
 
 This is a Quarto website.

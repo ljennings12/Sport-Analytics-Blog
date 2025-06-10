@@ -1,0 +1,564 @@
+---
+title: "2024 Fantasy Football Preview"
+description: "Preparing for NFL Fantasy Redraft Leagues"
+date: August 2024
+date-format: "MMM YYYY"
+image: cover.png
+about: 
+  template: solana
+format: 
+  html:
+    mainfont: "Roboto"
+    fontcolor: "black"
+    code-tools: 
+      source: www #github link
+author: Liam Jennings
+execute:
+  echo: false
+  warning: false
+  message: false
+  dev: "ragg_png"
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+## libraries
+if(!require('tidyverse') & !require('nflreadr') & !require('seriation') & 
+   !require('ggdendro') & !require('gt') & !require('gtExtras') & !require('plotly')) {
+  install.packages('tidyverse')
+  library('tidyverse')
+  install.packages('nflreadr')
+  library('nflreadr') # for nfl datasets
+  install.packages('seriation')
+  library('seriation') # organizing heatmap
+  install.packages('ggdendro')
+  library('ggdendro') # plotting hierarchical clustering
+  install.packages('gt')
+  library('gt') # gt tables
+  install.packages('gtExtras')
+  library('gtExtras') # in addition to gt tables
+  install.packages('plotly')
+  library('plotly') # interactive clustering plot
+}
+
+## set theme
+theme_set(theme_bw()) # set theme black and white
+
+## custom font for plots
+systemfonts::register_variant(name = "Roboto Bold", family = "Roboto", weight = "bold")
+```
+
+# 2024 Fantasy Football Preview
+
+## Introduction
+
+Introduction
+
+## Data
+
+Rankings, Opportunity, Snap Counts, and Roster
+
+
+```{r}
+#| label: load-data
+#| include: false
+
+## fantasy football rankings
+ff_rankings <- nflreadr::load_ff_rankings(type = "draft") |> 
+  filter(
+    # filter for redraft leagues only
+    ecr_type %in% c("ro", "rp"),
+    # do not want defensive players or kickers
+    !(pos %in% c("DB", "DL", "LB", "K"))
+  ) |> 
+  # select necessary columns
+  select(
+    ecr_type:worst
+  )
+
+## fantasy football opportunity
+opportunity <- nflreadr::load_ff_opportunity()
+
+## snap counts
+snaps <- load_snap_counts()
+
+## rosters
+age <- nflreadr::load_rosters() |>
+  filter(
+    # only want QB, RB, WR, TE
+    position %in% c("QB", "RB", "WR", "TE"),
+    # active players
+    status == "ACT"
+  ) |>
+  mutate(
+    # calculate age
+    age = as.numeric((Sys.Date() - birth_date)) %/% 365.25
+  ) |>
+  select(
+    player = full_name,
+    pos = position,
+    current_team = team,
+    age
+  ) |>
+  # change Brian Robinson's name for joining later
+  mutate(
+    player = ifelse(player == "Brian Robinson", "Brian Robinson Jr.", player)
+  )
+
+## break into 2 dfs
+### overall
+overall <- ff_rankings |> 
+  filter(ecr_type == "ro")
+
+### positional
+position <-  ff_rankings |> 
+  filter(ecr_type == "rp")
+```
+
+
+## Running Backs
+
+Goal: Cluster running backs based on 2023 stats and compare to 2024 rankings
+
+```{r}
+#| label: load-rb-data
+#| include: false
+
+## first position: RB
+rbs <- position |> 
+  filter(pos == "RB") |> 
+  # change Etienne's name to match other datasets
+  mutate(
+    player = ifelse(player == "Travis Etienne Jr.", "Travis Etienne", player)
+  )
+
+### RB opportunity
+rb_oppo <- opportunity |>
+  # filter for RBs and only regular season
+  filter(
+    position == "RB",
+    week <= 18
+  ) |> 
+  # change 'full name' to 'player' to match rbs dataset
+  rename(
+    player = full_name
+  ) |> 
+  # group by name
+  group_by(
+    player
+  ) |> 
+  # calculate fantasy stats
+  summarise(
+    games = n(),
+    rush_attempt = round(mean(rush_attempt), 2),
+    receptions_exp = round(mean(receptions_exp), 2),
+    rush_yards_gained_exp = round(mean(rush_yards_gained_exp), 2),
+    rec_yards_gained_exp = round(mean(rec_yards_gained_exp), 2),
+    total_yards_gained_exp = round(mean(total_yards_gained_exp), 2),
+    rush_touchdown_exp = round(mean(rush_touchdown_exp), 2),
+    rec_touchdown_exp = round(mean(rec_touchdown_exp), 2),
+    total_touchdown_exp = round(mean(total_touchdown_exp), 2),
+    total_fumble_lost = round(mean(rush_fumble_lost + rec_fumble_lost), 2),
+    min_total_fantasy_points_exp = round(min(total_fantasy_points_exp), 2),
+    max_total_fantasy_points_exp = round(max(total_fantasy_points_exp), 2),
+    total_fantasy_points_exp = round(mean(total_fantasy_points_exp), 2)
+  ) |> 
+  # change names to match other datasets
+  mutate(
+    player = ifelse(player == "Kenneth Walker", "Kenneth Walker III", player),
+    player = ifelse(player == "Brian Robinson", "Brian Robinson Jr.", player)
+  )
+
+### RB snaps
+rb_snaps <- snaps |> 
+  # filter for RBs and only regular season
+  filter(
+    position == "RB",
+    week <= 18
+  ) |> 
+  # group by name
+  group_by(
+    player
+  ) |> 
+  # calculate min, max, and average snap percentages
+  summarise(
+    min_offense_pct = min(offense_pct),
+    max_offense_pct = max(offense_pct),
+    offense_pct = round(mean(offense_pct), 2)
+  )
+  
+### join the data
+rbs_total <- rbs |> 
+  # join with opportunity
+  left_join(rb_oppo) |> 
+  # join with snap counts
+  left_join(rb_snaps) |> 
+  # join with rosters
+  left_join(age) |> 
+  # make a variable for current team
+  mutate(current_team = if_else(is.na(current_team), team, current_team))
+```
+
+### Hierachical Clustering
+
+```{r}
+#| label: setup-rb-clustering
+#| include: false
+#### remove rookies for clustering
+rbs_no_rook <- rbs_total |> 
+  drop_na(games, offense_pct)
+
+## hierarchical clustering
+### select and scale variables
+rbs_clust <- rbs_no_rook |> 
+  # scale variables
+  mutate(
+    scale_rush_att = as.numeric(scale(rush_attempt)),
+    scale_rec_exp = as.numeric(scale(receptions_exp)),
+    scale_total_yards_exp = as.numeric(scale(total_yards_gained_exp)),
+    scale_total_td_exp = as.numeric(scale(total_touchdown_exp)),
+    scale_snap_pct = as.numeric(scale(offense_pct))
+  ) |> 
+  select(
+    scale_rush_att:scale_snap_pct
+  ) |> 
+  # euclidean distance
+  dist()
+
+### convert to a matrix (set row and column names)
+rbs_clust_matrix <- as.matrix(rbs_clust)
+rownames(rbs_clust_matrix) <- rbs_no_rook$player
+colnames(rbs_clust_matrix) <- rbs_no_rook$player
+head(rbs_clust_matrix)
+
+### convert to a long table with pivot_longer for plotting purpose
+long_dist_matrix <- rbs_clust_matrix |> 
+  as_tibble() |> 
+  mutate(player1 = rownames(rbs_clust_matrix)) |> 
+  # tall / long table
+  # select everything but player
+  pivot_longer(cols = !player1, 
+               names_to = "player2", 
+               values_to = "distance")
+
+## complete linkage
+### hclust() with a dist() object
+rbs_complete <- rbs_clust |> 
+  hclust(method = "complete")
+```
+
+#### Dendrograms
+
+::: {.panel-tabset}
+
+## Original Dendrogram
+```{r}
+#| label: original-dendro
+
+rbs_complete |> 
+  ggdendrogram(
+    labels = FALSE,
+    leaf_labels = FALSE,
+    theme_dendro = FALSE
+  ) +
+  labs(y = "Dissimilarity between clusters") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()
+  )
+```
+
+
+## 2 Clusters
+
+
+```{r}
+#| label: 2-cluster-dendro
+
+rbs_complete |> 
+  ggdendrogram(
+    labels = FALSE,
+    leaf_labels = FALSE,
+    theme_dendro = FALSE
+  ) +
+  geom_hline(
+    yintercept = 6, 
+    linetype = "dashed", 
+    color = "firebrick1"
+  ) +
+  labs(y = "Dissimilarity between clusters") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()
+  )
+```
+
+
+## 3 Clusters
+
+
+```{r}
+#| label: 3-cluster-dendro
+
+rbs_complete |> 
+  ggdendrogram(
+    labels = FALSE,
+    leaf_labels = FALSE,
+    theme_dendro = FALSE
+  ) +
+  geom_hline(
+    yintercept = 5, 
+    linetype = "dashed", 
+    color = "firebrick1"
+  ) +
+  labs(y = "Dissimilarity between clusters") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()
+  )
+```
+
+## 4 Clusters
+
+
+```{r}
+#| label: 4-cluster-dendro
+
+rbs_complete |> 
+  ggdendrogram(
+    labels = FALSE,
+    leaf_labels = FALSE,
+    theme_dendro = FALSE
+  ) +
+  geom_hline(
+    yintercept = 4.25, 
+    linetype = "dashed", 
+    color = "firebrick1"
+  ) +
+  labs(y = "Dissimilarity between clusters") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()
+  )
+```
+
+
+## 5 Clusters
+
+
+```{r}
+#| label: 5-cluster-dendro
+
+rbs_complete |> 
+  ggdendrogram(
+    labels = FALSE,
+    leaf_labels = FALSE,
+    theme_dendro = FALSE
+  ) +
+  geom_hline(
+    yintercept = 3.5, 
+    linetype = "dashed", 
+    color = "firebrick1"
+  ) +
+  labs(y = "Dissimilarity between clusters") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()
+  )
+```
+
+:::
+
+### Principal Component Analysis
+
+Condense variables into 2-dimensions to plot easier
+
+```{r}
+#| label: pca
+#| include: false
+
+### implement PCA
+feat <- rbs_no_rook |> 
+  select(
+    rush_attempt,
+    receptions_exp,
+    total_yards_gained_exp,
+    total_touchdown_exp,
+    offense_pct
+  )
+
+rbs_pca <- prcomp(feat, center = TRUE, scale. = TRUE)
+
+
+## computing principal components
+rbs_pc_matrix <- rbs_pca$x
+
+
+### dataset for visualizing first two principal components
+rbs_pc <- rbs_no_rook |> 
+  mutate(
+    pc1 = rbs_pc_matrix[,1],
+    pc2 = rbs_pc_matrix[,2],
+    # five clusters from looking at dendrogram
+    cluster = factor(cutree(rbs_complete, h = 4)),
+    # not considering 2-point conversions
+    avg_fantasy_points = 
+      (receptions_exp * 0.5) + (total_yards_gained_exp * .10) + 
+      (total_touchdown_exp * 6)
+  )
+```
+
+
+### Cluster Analysis
+
+### Interactive Cluster Plot
+```{r}
+#| label: interactive-cluster-plot
+
+# make a list of custom font so plotly accepts it
+f <- list(
+  family = "Roboto Bold", 
+  color = "black"
+)
+
+# plot
+rbs_pc |> 
+  # plot_ly
+  plot_ly(
+    # size needs to negative so lower ecr is smaller (reverse scale)
+    # (e.g., Christian McCaffrey has the lowest ECR but needs to have biggest point)
+    x = ~pc1, y = ~pc2, color = ~cluster, size = ~-ecr,
+          
+    # color for each group
+    colors = c("royalblue4", "violet", "goldenrod", "darkgreen", "black"),
+          
+    # hover over points for text
+    hoverinfo = "text",
+          
+    # what text says (name, team, and % of points via free throws)
+    text = ~paste(
+      "Name:", player,
+      "<br>Team:", current_team,
+      "<br>Age:", age,
+      "<br>FP/G:", round(avg_fantasy_points, 2), 
+      "<br>Avg. Rank:", ecr)
+    ) |> 
+  
+  # scatterplot
+  add_markers(marker = list(sizeref = 3, sizemode = "diameter")) |>  
+  
+  # labels
+  layout(
+    title = list(
+      text = "<b>Clustering of 2023 Running Backs<b>", 
+      font = list(
+        size = 24
+      ),
+      yanchor = "middle"
+      #, 
+      # subtitle = list(
+      #   text = "For 2024 Fantasy Football Season",
+      #   font = list(
+      #     size = 14
+      #   )
+      # )
+    ),
+    legend = list(
+      orientation = "h",
+      # title = list(
+      #   text = "<b>Cluster<b>",
+      #   side = "top center"
+      # ),
+      font = list(size = 16), 
+      x = 0.5,
+      xanchor = "center",
+      y = -0.20
+    ),
+    xaxis = list(
+      title = "<b>PC 1<b>",
+      font = list(size = 20)
+    ),
+    yaxis = list(
+      title = "<b>PC 2<b>",
+      font = list(size = 20)
+    ),
+    font = f
+  )
+```
+
+
+#### Cluster Average
+```{r}
+#| label: cluster-averages
+
+rbs_pc |> 
+  group_by(cluster) |> 
+  summarize(
+    # avg_age = mean(age),
+    avg_rush_att = mean(rush_attempt),
+    avg_exp_rec = mean(receptions_exp),
+    avg_exp_total_yds = mean(total_yards_gained_exp),
+    avg_exp_td = mean(total_touchdown_exp),
+    avg_snap_rate = mean(offense_pct),
+    avg_ecr = mean(ecr),
+    avg_fantasy_points = mean(avg_fantasy_points)
+  ) |> 
+  gt(rowname_col = "cluster") |> 
+  fmt_number(columns = c(avg_rush_att, avg_exp_rec, avg_exp_total_yds, avg_exp_td, avg_snap_rate, avg_ecr, avg_fantasy_points), decimals = 2) |> 
+  data_color(columns = c(avg_ecr),
+             fn = scales::col_numeric(palette = c("#0d183e", "#e2fefe"), domain = NULL)) |> 
+  data_color(columns = c(avg_fantasy_points),
+             fn = scales::col_numeric(palette = c("#e2fefe", "#0d183e"), domain = NULL)) |> 
+  # data_color(columns = c(avg_rush_att, avg_exp_rec, avg_exp_total_yds, avg_exp_td, avg_snap_rate),
+  #            fn = scales::col_numeric(palette = c("#FEE0D2", "#67000D"), domain = NULL)) |> 
+  cols_align(align = "center", columns = c(avg_rush_att, avg_exp_rec, avg_exp_total_yds, avg_exp_td, avg_snap_rate)) |> 
+  tab_stubhead(label = "Cluster") |> 
+  cols_label(
+    # avg_age = "Age",
+    avg_rush_att = "Rush Attempts",
+    avg_exp_rec = "Expected Receptions",
+    avg_exp_total_yds = "Expected Total Yards",
+    avg_snap_rate = "Snap Rate",
+    avg_exp_td = "Expected Touchdowns",
+    avg_ecr = "Average Position Ranking",
+    avg_fantasy_points = "Fantasy Points / Game"
+  ) |> 
+  tab_header(title = md("**Running Back Clustering for Fantasy Football 2024**"),
+             subtitle = md("*Per game statistics calculated from 2023*")) |> 
+  tab_source_note(source_note = md("2024 rookies are not considered
+                                   <br>*Note: Cluster 1 only contains five RBs*
+                                   <br>*Note: 2-point conversions were not used in Fantasy Points / Game*")) |> 
+  gtExtras::gt_theme_espn()
+```
+
+
+#### Density Curves
+```{r}
+#| label: density-curves
+
+rbs_pc |> 
+  ggplot(aes(x = ecr, fill = cluster)) +
+  geom_density(alpha = 0.25) +
+  scale_fill_manual(values = c("royalblue4", "violet", "goldenrod", "darkgreen", "black")) +
+  labs(
+    x = "Average RB Ranking",
+    y = "Density",
+    fill = "Cluster",
+    title = "Density Curves of Average Ranking by Cluster"
+  ) +
+  theme(
+    plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    legend.position = "bottom",
+    legend.title.position = "top",
+    legend.title = element_text(size = 12, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 10, face = "bold", hjust = 0.5)
+  )
+```
+
+
+
+
