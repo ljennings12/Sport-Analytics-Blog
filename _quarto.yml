@@ -4,7 +4,7 @@ project:
   output-dir: docs
 
 website:
-  title: "Sport-Analytics-Blog"
+  title: "Insert Logo?"
   navbar:
     left:
       - href: index.qmd
