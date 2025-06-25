@@ -1,6 +1,10 @@
 ---
 title: "Basketball"
-format: html
+listing:
+  contents: basketball_blogs
+  type: default
+  date-format: "MMM YYYY"
+  sort: "date desc" 
 ---
 
 Basketball blogs!
