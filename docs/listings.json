@@ -4,6 +4,12 @@
     "items": []
   },
   {
+    "listing": "/basketball.html",
+    "items": [
+      "/basketball_blogs/mockdraft2025/mockdraft2025.html"
+    ]
+  },
+  {
     "listing": "/football.html",
     "items": [
       "/football_blogs/fantasy football preview/fantasy_football_preview.html"
