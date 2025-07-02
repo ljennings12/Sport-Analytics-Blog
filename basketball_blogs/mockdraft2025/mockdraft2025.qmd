@@ -3,9 +3,10 @@ title: "2025 NBA Mock Draft"
 editor: visual
 description: "Forecasting the destinations for the next generation of NBA stars"
 date: 2025-06-25
-image: draftorder.jpg
+image: cover.jpg
 about: 
   template: solana
+author: Danny Nolan
 ---
 
 The 2025 NBA Draft is upon us, and executives around the league have already kicked into high gear. Impact players like Desmond Bane, Jrue Holiday, and Kristaps Porzingis have already been traded, and the wheeling and dealing is certain to continue throughout the draft, which now spans two days. This year's draft features a generational prospect, loaded rosters with unusually high selections, and a team with five (5!) first-round choices. Let's take a look at how the first round might play out.
